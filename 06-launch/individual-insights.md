@@ -6,18 +6,18 @@
 
 ## Friction points
 
-_The biggest technical or strategic challenge you faced while developing your product concept._
+It was hard to read and analyse data. And I am also thinking to the fact that most of the time we don't have them or we con't know what are the best metrics to analyse. Baselines are also hard to define. There is a lot of preparation and in real life I think it is hard to follow all steps.
 
 _____
 
 ## Key learnings
 
-_A few surprising discoveries or insights you gained from the course overall._
+My biggest learning is how much numbers can invert our perceptions and qualitative data. Feedback are important but they could also deviate from reality. Numbers are really explanatory.
 
 _____
 
 ## Aha! moment
 
-_Your main "aha" moment during the project process._
+The instability of our perceptions
 
 _____
