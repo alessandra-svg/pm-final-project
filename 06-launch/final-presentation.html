@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RouteLogic Velocity: Giving Coordinators Their Time Back</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saans:wght@400;600;700;800;900&family=Antarctican+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07162C; --fg:#ffffff; --muted:#ffffff;
+  --orange:#fb923c; --cyan:#22d3ee; --teal:#34d399; --blue:#60a5fa; --violet:#a78bfa; --pink:#f472b6;
+  --eyebrow:#fdba74; --line:rgba(251,146,60,.25);
+  --head:"Saans","Inter","Helvetica Neue",Arial,sans-serif;
+  --body:"Saans","Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"Antarctican Mono","JetBrains Mono","SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-weight:400;line-height:1.45;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+section{min-height:100vh;scroll-snap-align:start;padding:clamp(28px,5vh,56px) clamp(24px,6vw,96px) clamp(28px,5vh,48px);display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,2vh,22px);position:relative;
+  background:radial-gradient(1000px 500px at 85% -10%,rgba(251,146,60,.10),transparent 60%),radial-gradient(800px 420px at -10% 110%,rgba(34,211,238,.07),transparent 60%),var(--bg)}
+.eyebrow{font-family:var(--mono);font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:var(--eyebrow);font-size:clamp(10px,1.1vw,13px)}
+h1,h2,h3{font-family:var(--head);font-weight:800;line-height:1.08;letter-spacing:-.01em}
+h1{font-weight:900;font-size:clamp(34px,5.6vw,78px);max-width:16ch}
+h2{font-size:clamp(24px,3.4vw,46px);max-width:24ch}
+h3{font-size:clamp(14px,1.45vw,19px);font-weight:700}
+p,li{font-size:clamp(12px,1.25vw,16px)}
+.small{font-size:clamp(11px,1.05vw,13.5px)}
+.mono{font-family:var(--mono);font-weight:400}
+.card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:clamp(12px,1.8vw,22px)}
+.hero{background:linear-gradient(135deg,rgba(251,146,60,.16),rgba(167,139,250,.08) 60%,rgba(34,211,238,.06));border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.4)}
+.key{box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.grid{display:grid;gap:clamp(10px,1.4vw,18px)}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.g21{grid-template-columns:1.25fr 1fr}
+.pill{display:inline-block;font-family:var(--mono);font-size:clamp(10px,1vw,12.5px);padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:rgba(251,146,60,.08);margin:0 6px 6px 0}
+.pill.c{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08)}
+.btn{display:inline-block;text-decoration:none;font-weight:800;font-size:clamp(12px,1.2vw,15px);background:var(--orange);color:#07162C;padding:12px 22px;border-radius:12px;box-shadow:0 10px 24px rgba(251,146,60,.35);transition:transform .15s}
+.btn:hover,.btn:focus-visible{transform:translateY(-2px);outline:2px solid #fff;outline-offset:3px}
+.btn.ghost{background:transparent;color:#fff;border:1px solid var(--orange);box-shadow:none}
+.callout{border-left:4px solid var(--orange);padding:clamp(12px,1.6vw,20px) clamp(14px,2vw,26px);border-radius:0 14px 14px 0;background:linear-gradient(90deg,rgba(251,146,60,.16),rgba(251,146,60,.03))}
+.callout.bad{border-left-color:var(--pink);background:linear-gradient(90deg,rgba(244,114,182,.16),rgba(244,114,182,.03))}
+.tag{font-family:var(--mono);font-size:clamp(9.5px,.95vw,12px);color:var(--cyan);text-transform:uppercase;letter-spacing:.1em}
+ul{padding-left:1.1em;display:grid;gap:5px}
+.num{font-family:var(--mono);color:var(--orange);font-weight:500}
+.col h3{margin-bottom:8px}
+.col.now{border-color:rgba(251,146,60,.7)}.col.next{border-color:rgba(34,211,238,.5)}.col.later{border-color:rgba(167,139,250,.5)}.col.cut{border-color:rgba(244,114,182,.5)}
+.col .item{border-top:1px solid rgba(255,255,255,.12);padding:7px 0;font-size:clamp(11px,1.05vw,13.5px)}
+.col .item b{display:block}
+.journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;position:relative}
+.step{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.03)}
+.step.misery{border:2px solid var(--pink);background:linear-gradient(160deg,rgba(244,114,182,.18),rgba(244,114,182,.04));box-shadow:0 12px 28px rgba(244,114,182,.18)}
+.step .n{font-family:var(--mono);color:var(--orange);font-size:12px}
+.step.misery .n{color:var(--pink)}
+.step p{font-size:clamp(10.5px,1vw,12.5px);margin-top:4px}
+table{border-collapse:collapse;width:100%}
+td,th{border-top:1px solid rgba(255,255,255,.12);padding:7px 10px;text-align:left;font-size:clamp(11px,1.05vw,13.5px);vertical-align:top}
+th{font-family:var(--mono);font-weight:400;color:var(--eyebrow);text-transform:uppercase;letter-spacing:.1em;font-size:clamp(9.5px,.9vw,11.5px)}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.rules .card:nth-child(1){border-color:rgba(52,211,153,.6)}.rules .card:nth-child(2){border-color:rgba(251,146,60,.6)}.rules .card:nth-child(3){border-color:rgba(244,114,182,.6)}
+.stat{font-family:var(--head);font-weight:900;font-size:clamp(28px,4vw,54px);color:var(--orange);line-height:1}
+/* chrome */
+#progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--orange),var(--pink));z-index:50}
+#dots{position:fixed;right:clamp(8px,1.4vw,20px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:50}
+#dots a{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--orange);display:block;transition:background .2s,transform .2s}
+#dots a.on{background:var(--orange);transform:scale(1.3)}
+#dots a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.counter{position:fixed;left:clamp(14px,2vw,28px);bottom:14px;font-family:var(--mono);font-size:11px;color:var(--eyebrow);z-index:50}
+@media (max-width:860px){.g2,.g3,.g4,.g21,.rules,.journey{grid-template-columns:1fr}#dots{display:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+<nav id="dots" aria-label="Slides"></nav>
+<div class="counter" id="counter" aria-hidden="true">1 / 8</div>
+
+<!-- 1 COVER -->
+<section id="s1" data-title="Cover">
+  <p class="eyebrow">Product School · Final Project · Product Management Certification</p>
+  <h1>RouteLogic Velocity: Giving Coordinators Their Time Back</h1>
+  <p style="font-size:clamp(15px,1.9vw,24px);max-width:36ch;font-weight:600">Less checking, more moving: Velocity gives Coordinators back the time the platform takes away.</p>
+  <div class="grid g21" style="align-items:end;max-width:1000px">
+    <div class="card hero key">
+      <p class="eyebrow">Author / cohort</p>
+      <p style="font-weight:700;margin:4px 0 12px">Alessandra Posca - Product Management Foundations - September 26</p>
+      <p class="eyebrow">Repo</p>
+      <p class="mono small" style="word-break:break-all;margin-top:4px"><a href="https://github.com/alessandra-svg/pm-final-project.git">https://github.com/alessandra-svg/pm-final-project.git</a></p>
+    </div>
+    <div><a class="btn" href="https://lovable.dev/preview/Ud1dcsGKehU4RApb5NYmMwm2LaBeGKPe" target="_blank" rel="noopener">View prototype</a></div>
+  </div>
+</section>
+
+<!-- 2 STRATEGY -->
+<section id="s2" data-title="Strategy">
+  <p class="eyebrow">Slide 5 · Strategy</p>
+  <h2>RouteLogic keeps saying yes to every enterprise request, but the 95% of daily users who need speed, not scope, are quietly slipping away.</h2>
+  <div class="grid g2">
+    <div class="card hero">
+      <p class="tag">Value proposition</p>
+      <p style="margin-top:6px">For fleet coordinators and dispatchers, the daily frontline users (the 95%), we restore speed and simplicity for daily tasks while preserving, not removing, the enterprise-grade features for those who still need them: a <b>"hide, don't delete"</b> approach. The urgency is user attrition already in motion: this is a response to something actively happening, not prevention.</p>
+    </div>
+    <div class="card">
+      <p class="tag">If RouteLogic does nothing for 12 months</p>
+      <ul style="margin-top:6px">
+        <li><b>Risk:</b> largest enterprise account already trialing a competitor, and its reference value with it.</li>
+        <li><b>Frontline disengagement:</b> the 95% keep experiencing the tool as a burden.</li>
+        <li><b>Competitive gap:</b> leaner competitors keep winning real-time coordination.</li>
+        <li><b>Reactive pressure:</b> rushed, worse-quality changes or budget cuts.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout key">
+    <p class="tag">Data-backed hypothesis · Optimizing the existing</p>
+    <p style="margin-top:6px">Based on Coordinator interviews (UXR-02: "I reassign a route and the driver doesn't see it for ten to fifteen minutes"; "we keep a WhatsApp group as the real system"), the same dashboard lag from a night-shift Dispatcher (UXR-09), BUG-2044 (8 to 15 min reassignment delay), BUG-2072 (20 to 60 min dashboard lag), and Compliance Check averaging <b>14.6 min vs. a 3-min benchmark</b> (CSAT 2.2), within a workflow where <b>69%</b> of Coordinators don't reach Shift Handoff, we believe that solving dashboard reliability and Compliance Check efficiency for the Fleet Coordinator will make Coordinators trust the platform as their single source of truth and complete their daily workflow past Compliance, as measured by a <b>45–60% relative increase</b> in completion past Compliance Check, from <b>31% to 45–50%</b> by the end of the pilot. Guardrail: Route Assignment completion rate, currently <b>71%</b>, must not drop. Go/no-go after one full pilot cycle.</p>
+  </div>
+</section>
+
+<!-- 3 RESEARCH -->
+<section id="s3" data-title="Research">
+  <p class="eyebrow">Slide 6 · Research</p>
+  <h2>The workaround is the competitor: texting dispatch and a paper manifest.</h2>
+  <div class="grid g21">
+    <div class="card hero">
+      <p class="tag">Current workaround (the status quo to beat)</p>
+      <ul style="margin:6px 0 10px">
+        <li>Texts the dispatcher directly instead of the in-app "mark delivered" flow (3 taps, 3 screens).</li>
+        <li>Keeps a paper manifest as backup.</li>
+        <li>Re-locates buried core functions every shift: "Start Route" has no fixed position.</li>
+      </ul>
+      <p class="small"><b>UXR-01:</b> "To mark a stop delivered I tap through three screens. In the rain, at a doorstep, with a package in one hand. I've started just texting my dispatcher instead."</p>
+      <p class="small"><b>UXR-12:</b> five of seven drivers keep a paper manifest "just in case the app dies". <b>BUG-2055:</b> no single-tap completion, top frontline complaint.</p>
+    </div>
+    <div class="card">
+      <p class="tag">Competitive advantages</p>
+      <ul style="margin-top:6px">
+        <li><b>Real-time system of record:</b> closes the data-integrity gap of texted updates and a stale dashboard.</li>
+        <li><b>Zero double-entry:</b> eliminates the paper manifest.</li>
+        <li><b>Scales across the 95%:</b> one product fix reaches every driver at once.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="tag">Future-state journey map · highlighted: moment of misery resolved</p>
+  <div class="journey">
+    <div class="step"><span class="n">1 · Simple home screen</span><p>Sees "Start Route" and "Mark Delivered" front and center. <b>Pain:</b> core actions buried 2–3 levels deep (BUG-2079).</p></div>
+    <div class="step misery"><span class="n">2 · One-tap completion</span><p>Completes the delivery in one motion, package still in hand. <b>Pain:</b> three taps across three screens (BUG-2055).</p></div>
+    <div class="step"><span class="n">3 · Instant sync confirmation</span><p>On-screen confirmation the update reached dispatch. <b>Pain:</b> dashboard lag showing stale status (BUG-2072).</p></div>
+    <div class="step"><span class="n">4 · Trust rebuilt</span><p>Stops texting the dispatcher; one single source of truth. <b>Pain:</b> off-platform texting (UXR-01).</p></div>
+  </div>
+</section>
+
+<!-- 4 BLUEPRINT -->
+<section id="s4" data-title="Blueprint">
+  <p class="eyebrow">Slide 7 · Blueprint · Team: 2 engineers + 1 designer + 1 CS lead</p>
+  <h2>Now: One-Click Compliance Checklist.</h2>
+  <div class="grid g4">
+    <div class="card col now key"><h3 style="color:var(--orange)">Now · Pilot (4 wks, 3 accounts)</h3>
+      <div class="item"><b>B1 One-Click Compliance Checklist</b>Largest absolute drop in the funnel (−23 pts, 32% relative), 5× time gap (14.6 vs. 3 min). Ships with a parallel bug-fix track (BUG-2044, BUG-2072).</div></div>
+    <div class="card col next"><h3 style="color:var(--cyan)">Next · GA (weeks 5-8)</h3>
+      <div class="item"><b>B3 Shift Handoff Wizard</b>Handoff loses 35% of arrivals; first lever if the pilot stalls near 40%.</div>
+      <div class="item"><b>B5 Step Progress Indicator</b>Cheap; pull into Now only if there's slack.</div></div>
+    <div class="card col later"><h3 style="color:var(--violet)">Later · Backlog</h3>
+      <div class="item"><b>B2 Smart Daily Report Auto-Fill</b>Downstream of the primary metric; AI accuracy risk.</div>
+      <div class="item"><b>B6 Driver Alert Notifications</b>Depends on BUG-2044 root cause.</div>
+      <div class="item"><b>B9 Audit Trail Export</b> · <b>B10 In-App Training</b></div></div>
+    <div class="card col cut"><h3 style="color:var(--pink)">✂ Cut list</h3>
+      <div class="item"><b>B4 Mobile-First Dashboard</b>Not feasible in 4 weeks; risks the guardrail.</div>
+      <div class="item"><b>B7 Contextual AI ETA</b>Engineering/Sales goal, not Coordinator friction.</div>
+      <div class="item"><b>B8 Fleet Analytics Manager View</b>Serves the executive buyer.</div></div>
+  </div>
+  <div class="grid g21">
+    <div class="card hero">
+      <p class="tag">PRD highlights · Must-haves</p>
+      <ul style="margin-top:6px">
+        <li><b>M1</b> Pre-fill from existing RouteLogic data.</li>
+        <li><b>M2</b> Confirm-all with exception editing.</li>
+        <li><b>M3</b> Empty-field highlighting.</li>
+        <li><b>M4</b> Same compliance record as today. <b>M5</b> Preserve existing step tracking.</li>
+        <li><b>Won't:</b> W1a AI suggestions for fields with no system data; W1b auto-submission until Compliance/Legal confirms validity.</li>
+      </ul>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;gap:12px">
+      <p class="small"><b>What the PRD makes explicit:</b> pre-filled data can be wrong. Any value updated more than 15 minutes ago is flagged and must be verified before "Confirm all", otherwise the feature repeats the trust problem behind the WhatsApp group (UXR-02).</p>
+      <div><a class="btn" href="https://lovable.dev/preview/Ud1dcsGKehU4RApb5NYmMwm2LaBeGKPe" target="_blank" rel="noopener">View prototype</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 VALIDATION -->
+<section id="s5" data-title="Validation">
+  <p class="eyebrow">Slide 8 · Validation · A/B experiment brief</p>
+  <h2>Does pre-filled, one-click confirmation get Coordinators past Compliance?</h2>
+  <div class="grid g2">
+    <div class="card hero key">
+      <p class="tag">Hypothesis</p>
+      <p style="margin-top:6px" class="small">We believe the One-Click Compliance Checklist for Coordinators will make them trust the platform as their single source of truth and complete the daily workflow past Compliance, measured by a <b>+14</b> change in workflow completion past Compliance Check within 4 weeks, while protecting Route Assignment completion (~71%).</p>
+      <table style="margin-top:8px">
+        <tr><th>Primary metric</th><td>Workflow completion past Compliance Check</td></tr>
+        <tr><th>Baseline</th><td>Compliance Check 14.6 min vs. 3-min benchmark (CSAT 2.2); 69% don't reach Shift Handoff</td></tr>
+        <tr><th>MDE</th><td>+14</td></tr>
+        <tr><th>Guardrail</th><td>Route Assignment completion (~71%); not below 66% at any point in 4 weeks</td></tr>
+        <tr><th>Design</th><td>188 per arm · 50/50 · 4 weeks · p &lt; 0.05, two-sided</td></tr>
+      </table>
+    </div>
+    <div class="grid" style="grid-template-rows:auto auto">
+      <div class="card"><p class="tag">Control (A)</p><p class="small" style="margin-top:4px">Compliance Check logging takes 14.6 min today, nearly 5× the benchmark. Only 48% get past this step vs. 71% completing Route Assignment: a 23-point drop (CSAT 2.2, "Weak").</p></div>
+      <div class="card" style="border-color:rgba(34,211,238,.5)"><p class="tag">Variant (B)</p><p class="small" style="margin-top:4px">Compliance Check opens pre-filled with data RouteLogic already holds; the Coordinator reviews and confirms in one action. FR1: 100% of fields with system data populated on load. FR2: one click submits when required fields are filled and no flag is open.</p>
+        <p class="small" style="margin-top:6px"><b>Held constant:</b> Route Assignment flow, compliance record, tracking schema, no AI. <b>Caveat:</b> the variant bundles pre-fill, single-click confirmation and queue triage, so the effect can't be attributed to one mechanism.</p></div>
+    </div>
+  </div>
+  <div class="rules">
+    <div class="card key"><p class="tag" style="color:var(--teal)">Ship</p><p class="small" style="margin-top:4px">Completion improves by ≥ +14 at p &lt; 0.05 and Route Assignment never falls below 66%.</p></div>
+    <div class="card key"><p class="tag" style="color:var(--orange)">Iterate</p><p class="small" style="margin-top:4px">Direction is positive but lift is below the MDE.</p></div>
+    <div class="card key"><p class="tag" style="color:var(--pink)">Kill</p><p class="small" style="margin-top:4px">No improvement, or the primary metric moves negatively. Read date fixed at end of week 4; no peeking.</p></div>
+  </div>
+</section>
+
+<!-- 6 LAUNCH -->
+<section id="s6" data-title="Launch">
+  <p class="eyebrow">Slide 9 · Launch · GTM plan</p>
+  <h2>M-tier targeted launch: engagement, not awareness.</h2>
+  <div class="grid g2">
+    <div class="card hero">
+      <p class="tag">GTM strategy</p>
+      <p class="small" style="margin:6px 0"><b>Goal:</b> Engagement. Coordinators already use Compliance Check daily; the aim is adoption of the new flow over old habits (re-typing, WhatsApp cross-checks).</p>
+      <p class="small" style="margin-bottom:6px"><b>Audience:</b> Coordinators at the 3 pilot accounts who complete at least one Compliance Check per week.</p>
+      <p class="small" style="margin-bottom:8px"><b>Tier:</b> <span class="pill">M · Targeted</span> small reach, but silence risks contaminating the pilot read.</p>
+      <p class="tag" style="margin-bottom:6px">Channels (all owned)</p>
+      <span class="pill c">Direct message to Coordinators</span><span class="pill c">Live or recorded walkthrough</span><span class="pill c">In-app banner / tooltip</span>
+      <p class="small" style="margin-top:8px"><b>Timeline:</b> internal CS brief and Support FAQ before pilot start; banner and walkthrough on Day 1; no push after launch.</p>
+    </div>
+    <div class="card key">
+      <p class="tag">Success metrics dashboard</p>
+      <div class="grid g3" style="margin:8px 0">
+        <div><div class="stat">≥80%</div><p class="small">Enablement reach before first post-launch check (provisional)</p></div>
+        <div><div class="stat">≥50%</div><p class="small">Adoption: "Confirm all" on first exposure (provisional)</p></div>
+        <div><div class="stat" style="font-size:clamp(20px,2.6vw,34px)">&gt; baseline</div><p class="small">Support tickets: flag volume above pre-launch baseline</p></div>
+      </div>
+      <p class="small"><b>Likely post-launch decision:</b> Iterate. 3 accounts and 4 weeks is too small a signal to double down.</p>
+    </div>
+  </div>
+  <div class="callout bad key">
+    <p class="tag" style="color:var(--pink)">Bad signal to watch</p>
+    <p class="small" style="margin-top:4px"><b>High reach, low adoption:</b> understood but not trusted or not usable; the friction is the experience (or fear that pre-filled data is wrong). <b>Low reach, low adoption:</b> Coordinators didn't know the change happened, so the feature never got a fair test. Track the two metrics separately to tell them apart.</p>
+  </div>
+</section>
+
+<!-- 7 STORY -->
+<section id="s7" data-title="Story">
+  <p class="eyebrow">Slide 10 · Story</p>
+  <h2>Numbers can invert our perceptions.</h2>
+  <div class="grid g2">
+    <div class="card hero key">
+      <p class="tag">Friction points + aha moment</p>
+      <p style="margin-top:8px">It was hard to read and analyse data. I also think about the fact that most of the time we don't have the data, or we don't know which metrics are best to analyse. Baselines are also hard to define. There is a lot of preparation, and in real life I think it is hard to follow all the steps.</p>
+    </div>
+    <div class="card key">
+      <p class="tag">Key takeaways / what's next</p>
+      <p style="margin-top:8px">My biggest learning is how much numbers can invert our perceptions and qualitative data. Feedback is important, but it can also deviate from reality. Numbers are really explanatory.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 THANK YOU -->
+<section id="s8" data-title="Submit" style="align-items:flex-start">
+  <p class="eyebrow">Thank you</p>
+  <h1 style="max-width:14ch">Thank you.</h1>
+  <div class="card hero key" style="max-width:760px">
+    <p class="eyebrow">Repo</p>
+    <p class="mono small" style="word-break:break-all;margin:4px 0 12px"><a href="https://github.com/alessandra-svg/pm-final-project.git">https://github.com/alessandra-svg/pm-final-project.git</a></p>
+    <span class="pill">Product Management Foundations · September 26</span>
+  </div>
+  <div class="callout key" style="max-width:760px"><p style="font-weight:800">Submit to the learning platform</p><p class="small">Commit <span class="mono">06-launch/final-presentation.html</span> and submit the repo link.</p></div>
+  <a class="btn ghost" href="https://lovable.dev/preview/Ud1dcsGKehU4RApb5NYmMwm2LaBeGKPe" target="_blank" rel="noopener">View prototype</a>
+</section>
+
+<script>
+(function(){
+  var secs=[].slice.call(document.querySelectorAll('section'));
+  var dots=document.getElementById('dots'), bar=document.getElementById('progress'), counter=document.getElementById('counter');
+  secs.forEach(function(s,i){
+    var a=document.createElement('a');a.href='#'+s.id;a.setAttribute('aria-label','Go to '+s.dataset.title);a.title=s.dataset.title;
+    a.addEventListener('click',function(e){e.preventDefault();go(i)});dots.appendChild(a);
+  });
+  var da=[].slice.call(dots.children);
+  function cur(){var y=window.scrollY+window.innerHeight/2;var c=0;secs.forEach(function(s,i){if(s.offsetTop<=y)c=i});return c}
+  function go(i){i=Math.max(0,Math.min(secs.length-1,i));secs[i].scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}
+  function update(){
+    var max=document.documentElement.scrollHeight-window.innerHeight;
+    bar.style.width=(max>0?window.scrollY/max*100:0)+'%';
+    var c=cur();da.forEach(function(d,i){d.classList.toggle('on',i===c)});counter.textContent=(c+1)+' / '+secs.length;
+  }
+  window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();
+  document.addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    var t=e.target&&e.target.tagName;if(t==='INPUT'||t==='TEXTAREA')return;
+    var k=e.key;
+    if(k==='ArrowDown'||k===' '||k==='PageDown'){e.preventDefault();go(cur()+(e.shiftKey&&k===' '?-1:1))}
+    else if(k==='ArrowUp'||k==='PageUp'){e.preventDefault();go(cur()-1)}
+    else if(k==='Home'){e.preventDefault();go(0)}
+    else if(k==='End'){e.preventDefault();go(secs.length-1)}
+    else if(k==='Escape'){go(0)}
+  });
+})();
+</script>
+</body>
+</html>
